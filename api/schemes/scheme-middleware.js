@@ -1,3 +1,5 @@
+// ===== IMPORTS =====
+const Scheme = require("./scheme-model")
 /*
   If `scheme_id` does not exist in the database:
 
@@ -6,8 +8,17 @@
     "message": "scheme with scheme_id <actual id> not found"
   }
 */
-const checkSchemeId = (req, res, next) => {
-
+const checkSchemeId = async (req, res, next) => {
+  const { scheme_id } = req.params;
+  const scheme = await Scheme.lookForId(scheme_id);
+  if (scheme === null) {
+    next({
+      status: 404,
+      message: `scheme with scheme_id ${scheme_id} not found`
+    });
+  } else {
+    next();
+  }
 }
 
 /*

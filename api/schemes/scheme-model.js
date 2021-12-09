@@ -34,9 +34,48 @@ async function find() { // EXERCISE A
   */
 }
 
-function findById(scheme_id) { // EXERCISE B
+async function findById(scheme_id) { // EXERCISE B
+  const schemeArray = await db("schemes")
+    .select('schemes.scheme_id',
+      'schemes.scheme_name',
+      'steps.instructions',
+      'steps.step_number',
+      'steps.step_id')
+    .leftJoin("steps",
+      "schemes.scheme_id",
+      "steps.scheme_id")
+    .orderBy("steps.step_number", "asc")
+    .where("schemes.scheme_id", scheme_id)
+
+  const schemeWithSteps = { steps: [] }
+  schemeWithSteps.scheme_id = schemeArray[0].scheme_id
+  schemeWithSteps.scheme_name = schemeArray[0].scheme_name
+
+  schemeArray.filter(scheme => {
+    const { step_id, step_number, instructions } = scheme
+    if (!step_id || !step_number || !instructions) {
+      return []
+    } else {
+      return schemeWithSteps.steps.push({
+        step_id: step_id,
+        step_number: step_number,
+        instructions: instructions
+      })
+    }
+  })
+
+  return schemeWithSteps
   /*
-    1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
+  RAW SQL:
+    SELECT schemes.scheme_id, schemes.scheme_name, steps.instructions,
+    steps.step_number,
+    steps.step_id
+    FROM schemes
+    LEFT JOIN steps
+    ON schemes.scheme_id = steps.scheme_id
+    WHERE schemes.scheme_id = {scheme_id};
+
+  1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
 
       SELECT
           sc.scheme_name,
@@ -102,6 +141,16 @@ function findById(scheme_id) { // EXERCISE B
   */
 }
 
+async function lookForId(scheme_id) {
+  const [foundId] = await db("schemes")
+    .select("scheme_id")
+    .where("scheme_id", scheme_id)
+  if (foundId === undefined) {
+    return null
+  }
+  return true
+}
+
 function findSteps(scheme_id) { // EXERCISE C
   /*
     1C- Build a query in Knex that returns the following data.
@@ -145,4 +194,5 @@ module.exports = {
   findSteps,
   add,
   addStep,
+  lookForId,
 }
