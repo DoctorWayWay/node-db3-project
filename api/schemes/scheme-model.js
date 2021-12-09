@@ -200,7 +200,11 @@ async function findSteps(scheme_id) { // EXERCISE C
   */
 }
 
-function add(scheme) { // EXERCISE D
+async function add(scheme) { // EXERCISE D
+  const [newSchemeId] = await db("schemes")
+    .insert(scheme)
+  const newScheme = await findById(newSchemeId)
+  return newScheme
   /*
     1D- This function creates a new scheme and resolves to _the newly created scheme_.
   */
